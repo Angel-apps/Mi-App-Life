@@ -4,7 +4,7 @@ import plotly.express as px
 import os
 
 # Configuración de página minimalista
-st.set_page_config(page_title="Gestión de Manufactura Automatizada", page_icon="🏭", layout="wide")
+st.set_page_config(page_title="Gestión de Manufactura", page_icon="🏭", layout="wide")
 
 # Archivos locales
 DB_MATERIA = "db_materia_prima.csv"
@@ -130,6 +130,7 @@ if "menu_seleccionado" not in st.session_state:
 # ----------------------------
 st.markdown("""
     <style>
+    /* Fondo negro absoluto para todo el sistema */
     .stApp, .main, [data-testid="stSidebar"], [data-testid="stHeader"] {
         background-color: #000000 !important;
     }
@@ -140,10 +141,26 @@ st.markdown("""
     [data-testid="stSidebar"] {
         display: none !important;
     }
-    h1, h2, h3, p, span, label {
+    h1, h2, h3, p, span, label, .stMetric div {
         color: #ffffff !important;
         font-family: 'Inter', sans-serif;
     }
+    
+    /* TRUCO INMORTAL: Forzar a las columnas de celular a quedarse en una sola fila horizontal */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+    div[data-testid="stHorizontalBlock"] > div {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+    
+    /* Estilo minimalista para botones de formularios */
     .stButton>button {
         background-color: #111111 !important;
         color: white !important;
@@ -155,54 +172,43 @@ st.markdown("""
         background-color: #000000 !important;
         color: #ffffff !important;
     }
-    
-    /* ESTILOS DEL MENÚ HORIZONTAL PREMIUM */
-    .menu-horizontal {
-        display: flex !important;
-        justify-content: space-around !important;
-        background-color: #000000 !important;
-        padding: 15px 5px !important;
-        border-bottom: 1px solid #111111 !important;
-        margin-bottom: 20px !important;
-    }
-    .menu-boton-activo {
-        background: none !important;
-        border: none !important;
-        color: #ffffff !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        cursor: pointer !important;
-    }
-    .menu-boton-inactivo {
-        background: none !important;
-        border: none !important;
-        color: #444444 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        cursor: pointer !important;
-    }
     </style>
 """, unsafe_allow_html=True)
 
 # ----------------------------
-# PANTALLA DE LOGUEO (TOTAL BLACK)
+# PANTALLA DE LOGUEO (TOTAL BLACK COMPLETA Y SEGURA)
 # ----------------------------
 if not st.session_state.rol:
     st.markdown("""
         <style>
-        .login-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 15vh; margin-bottom: 30px; }
+        .login-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 18vh; margin-bottom: 25px; }
         .avatar { width: 100px; height: 100px; border: 4px solid #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .avatar::before { content: "👤"; font-size: 50px; color: #ffffff; }
-        div[data-testid="stTextInput"] > div { background-color: #111111 !important; border: 1px solid #333333 !important; border-radius: 20px !important; max-width: 280px; margin: 0 auto; }
-        div[data-testid="stTextInput"] input { color: #ffffff !important; text-align: center; font-size: 16px; }
+        
+        /* Asegurar que la caja de texto se vea perfectamente y no se esconda */
+        div[data-testid="stTextInput"] {
+            max-width: 280px !important;
+            margin: 0 auto !important;
+        }
+        div[data-testid="stTextInput"] > div { 
+            background-color: #111111 !important; 
+            border: 1px solid #333333 !important; 
+            border-radius: 20px !important; 
+        }
+        div[data-testid="stTextInput"] input { 
+            color: #ffffff !important; 
+            text-align: center !important; 
+            font-size: 16px !important; 
+        }
         div[data-testid="stTextInput"] label { display: none !important; }
         </style>
     """, unsafe_allow_html=True)
 
+    # Dibujamos el icono redondo centrado de tu foto
     st.markdown('<div class="login-box"><div class="avatar"></div></div>', unsafe_allow_html=True)
-    codigo_ingresado = st.text_input("Password", type="password", placeholder="🔒 Digite el código...")
+    
+    # El campo de entrada aparece limpio en el centro
+    codigo_ingresado = st.text_input("Ingreso", type="password", placeholder="🔒 Digite el código...")
 
     if codigo_ingresado:
         if codigo_ingresado == CODIGO_ADMIN:
@@ -217,14 +223,14 @@ if not st.session_state.rol:
             st.markdown("<p style='text-align:center; color:#ff4b4b; font-size:14px; margin-top:15px;'>Código incorrecto</p>", unsafe_allow_html=True)
 
 # ----------------------------
-# APLICACIÓN INICIADA (MENÚ SEGURO DE 1 SOLA FILA)
+# APLICACIÓN INICIADA (MENÚ HORIZONTAL PERFECTO)
 # ----------------------------
 else:
     # Definir opciones del menú interactivo según rol
     if st.session_state.rol == "Administrador":
         opciones = [
             {"name": "Panel de Control", "icon": "📊", "label": "Panel"},
-            {"name": "Almacen", "icon": "📦", "label": "Almacén"},
+            {"name": "Almacen", "icon": "📦", "label": "Almacen"},
             {"name": "Taller de Fabricación", "icon": "🔨", "label": "Taller"},
             {"name": "Ventas", "icon": "💰", "label": "Ventas"},
             {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
@@ -235,21 +241,17 @@ else:
             {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
         ]
 
-    # Renderizar barra horizontal limpia con las columnas nativas pero sin colapso vertical ruidoso
+    # Creamos las columnas horizontales que NO se van a colapsar en vertical gracias al CSS de arriba
     cols_nav = st.columns(len(opciones))
     
     for idx, opt in enumerate(opciones):
         with cols_nav[idx]:
-            # Detectar si este botón es el activo actualmente
-            es_activo = st.session_state.menu_seleccionado == opt["name"]
+            es_act = st.session_state.menu_seleccionado == opt["name"]
             
-            # Estilo del texto del botón
-            estilo_texto = "color: #ffffff; font-weight: bold; font-size: 11px;" if es_activo else "color: #555555; font-size: 11px;"
-            estilo_icono = "font-size: 28px; opacity: 1.0;" if es_activo else "font-size: 28px; opacity: 0.3;"
+            # Si está seleccionado brilla en blanco puro, si no, se queda opaco elegante
+            opacidad = "opacity: 1.0; font-weight: bold; color: #ffffff;" if es_act else "opacity: 0.3; color: #888888;"
             
+            # Dibujamos el diseño estilo tu foto: Icono arriba, texto abajo pequeño
             st.markdown(f"""
-                <div style='text-align: center; margin-bottom: -10px;'>
-                    <span style='{estilo_icono}'>{opt["icon"]}</span>
-                </div>
-            """, unsafe_allow_html=True)
-            
+                <div style='text-align: center; margin-bottom: -5px; {opacidad}'>
+                    <span style='font-size: 24px;'>{opt["icon"]}</span><br>
