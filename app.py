@@ -130,7 +130,6 @@ if "menu_seleccionado" not in st.session_state:
 # ----------------------------
 st.markdown("""
     <style>
-    /* Fondo negro absoluto para todo el sistema */
     .stApp, .main, [data-testid="stSidebar"], [data-testid="stHeader"] {
         background-color: #000000 !important;
     }
@@ -146,7 +145,6 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    /* TRUCO INMORTAL: Forzar a las columnas de celular a quedarse en una sola fila horizontal */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
@@ -160,7 +158,6 @@ st.markdown("""
         min-width: 0 !important;
     }
     
-    /* Estilo minimalista para botones de formularios */
     .stButton>button {
         background-color: #111111 !important;
         color: white !important;
@@ -176,7 +173,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------
-# PANTALLA DE LOGUEO (TOTAL BLACK COMPLETA Y SEGURA)
+# PANTALLA DE LOGUEO
 # ----------------------------
 if not st.session_state.rol:
     st.markdown("""
@@ -185,7 +182,6 @@ if not st.session_state.rol:
         .avatar { width: 100px; height: 100px; border: 4px solid #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .avatar::before { content: "👤"; font-size: 50px; color: #ffffff; }
         
-        /* Asegurar que la caja de texto se vea perfectamente y no se esconda */
         div[data-testid="stTextInput"] {
             max-width: 280px !important;
             margin: 0 auto !important;
@@ -204,10 +200,7 @@ if not st.session_state.rol:
         </style>
     """, unsafe_allow_html=True)
 
-    # Dibujamos el icono redondo centrado de tu foto
     st.markdown('<div class="login-box"><div class="avatar"></div></div>', unsafe_allow_html=True)
-    
-    # El campo de entrada aparece limpio en el centro
     codigo_ingresado = st.text_input("Ingreso", type="password", placeholder="🔒 Digite el código...")
 
     if codigo_ingresado:
@@ -223,10 +216,9 @@ if not st.session_state.rol:
             st.markdown("<p style='text-align:center; color:#ff4b4b; font-size:14px; margin-top:15px;'>Código incorrecto</p>", unsafe_allow_html=True)
 
 # ----------------------------
-# APLICACIÓN INICIADA (MENÚ HORIZONTAL PERFECTO)
+# APLICACIÓN INICIADA
 # ----------------------------
 else:
-    # Definir opciones del menú interactivo según rol
     if st.session_state.rol == "Administrador":
         opciones = [
             {"name": "Panel de Control", "icon": "📊", "label": "Panel"},
@@ -241,17 +233,31 @@ else:
             {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
         ]
 
-    # Creamos las columnas horizontales que NO se van a colapsar en vertical gracias al CSS de arriba
     cols_nav = st.columns(len(opciones))
     
     for idx, opt in enumerate(opciones):
         with cols_nav[idx]:
             es_act = st.session_state.menu_seleccionado == opt["name"]
-            
-            # Si está seleccionado brilla en blanco puro, si no, se queda opaco elegante
             opacidad = "opacity: 1.0; font-weight: bold; color: #ffffff;" if es_act else "opacity: 0.3; color: #888888;"
             
-            # Dibujamos el diseño estilo tu foto: Icono arriba, texto abajo pequeño
             st.markdown(f"""
                 <div style='text-align: center; margin-bottom: -5px; {opacidad}'>
                     <span style='font-size: 24px;'>{opt["icon"]}</span><br>
+                    <span style='font-size: 9px; font-family: sans-serif; white-space: nowrap;'>{opt["label"]}</span>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("""
+                <style>
+                div[data-testid="stHorizontalBlock"] button {
+                    background-color: transparent !important;
+                    border: none !important;
+                    color: transparent !important;
+                    height: 40px !important;
+                    margin-top: -45px !important;
+                    position: relative !important;
+                    z-index: 10 !important;
+                }
+                div[data-testid="stHorizontalBlock"] button:hover {
+                    background-color: transparent !important;
+                    border: none !important;
