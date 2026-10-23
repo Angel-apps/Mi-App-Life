@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# Configuración de página
+# Configuración de página minimalista
 st.set_page_config(page_title="Gestión de Manufactura Automatizada", page_icon="🏭", layout="wide")
 
 # Archivos locales
@@ -35,7 +35,6 @@ def cargar_datos(ruta, columnas_defecto):
         df = pd.read_csv(ruta)
         if df.empty:
             return pd.DataFrame(columnas_defecto)
-        # Asegurar columnas necesarias
         for fila in columnas_defecto:
             for col in fila.keys():
                 if col not in df.columns:
@@ -120,123 +119,132 @@ if "ventas" not in st.session_state:
     ])
     st.session_state.ventas = normalizar_numericos(st.session_state.ventas, ["Unidades Vendidas", "Total Venta ($)"])
 
+if "rol" not in st.session_state:
+    st.session_state.rol = None
+
+if "menu_seleccionado" not in st.session_state:
+    st.session_state.menu_seleccionado = "Panel de Control"
+
 # ----------------------------
-# CSS
+# ESTILOS CSS BASE (TOTAL BLACK)
 # ----------------------------
+# Forzamos fondo negro absoluto y eliminamos componentes visuales por defecto
 st.markdown("""
     <style>
-    .main { background-color: #fcfcfc; }
-    h1, h2, h3 { color: #1e1e24; font-family: 'Inter', sans-serif; font-weight: 600; }
-    .stButton>button { background-color: #1e1e24; color: white; border-radius: 6px; border: none; padding: 0.5rem 1rem; }
-    .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #f0f0f0; margin-bottom: 20px; }
+    .stApp, .main, [data-testid="stSidebar"], [data-testid="stHeader"] {
+        background-color: #000000 !important;
+    }
+    header, footer {
+        visibility: hidden !important;
+        height: 0px !important;
+    }
+    /* Ocultar barra lateral por completo */
+    [data-testid="stSidebar"] {
+        display: none !important;
+    }
+    
+    /* Diseño de los contenedores de datos */
+    h1, h2, h3, p, span, label {
+        color: #ffffff !important;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Estilizar botones nativos de los formularios para que sigan siendo minimalistas */
+    .stButton>button {
+        background-color: #111111 !important;
+        color: white !important;
+        border: 1px solid #333333 !important;
+        border-radius: 8px !important;
+        width: 100%;
+    }
+    .stButton>button:hover {
+        border-color: #ffffff !important;
+    }
+    
+    /* Tablas de datos oscuras */
+    div[data-testid="stDataFrame"] div {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ----------------------------
-# SIDEBAR Y ACCESO
+# PANTALLA DE LOGUEO (TOTAL BLACK)
 # ----------------------------
-with st.sidebar:
-    st.markdown("### 🔐 Acceso al Sistema")
-    codigo_ingresado = st.text_input("Introduce tu código:", type="password")
+if not st.session_state.rol:
+    st.markdown("""
+        <style>
+        .login-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 15vh; margin-bottom: 30px; }
+        .avatar { width: 100px; height: 100px; border: 4px solid #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .avatar::before { content: "👤"; font-size: 50px; color: #ffffff; }
+        div[data-testid="stTextInput"] > div { background-color: #111111 !important; border: 1px solid #333333 !important; border-radius: 20px !important; max-width: 280px; margin: 0 auto; }
+        div[data-testid="stTextInput"] input { color: #ffffff !important; text-align: center; font-size: 16px; }
+        div[data-testid="stTextInput"] label { display: none !important; }
+        </style>
+    """, unsafe_allow_html=True)
 
-    if codigo_ingresado == CODIGO_ADMIN:
-        rol = "Administrador"
-        st.success("Acceso: Administrador 👑")
-    elif codigo_ingresado == CODIGO_EMPLEADO:
-        rol = "Empleado"
-        st.success("Acceso: Empleado 🛠️")
-    else:
-        rol = None
-        if codigo_ingresado != "":
-            st.error("Código incorrecto")
+    st.markdown('<div class="login-box"><div class="avatar"></div></div>', unsafe_allow_html=True)
+    codigo_ingresado = st.text_input("Password", type="password", placeholder="🔒 Digite el código...")
 
-    st.markdown("---")
-
-    if rol == "Administrador":
-        opciones_menu = ["📈 Dashboard General", "📦 Almacén Materia Prima", "🔨 Taller de Fabricación", "💰 Registrar Venta", "📚 Videos de Capacitación"]
-    elif rol == "Empleado":
-        opciones_menu = ["🔨 Taller de Fabricación", "📚 Videos de Capacitación"]
-    else:
-        opciones_menu = []
-
-    if rol:
-        menu = st.radio("Navegación:", opciones_menu)
-
-    st.markdown("<small>Circuito Local Automatizado v2.5</small>", unsafe_allow_html=True)
+    if codigo_ingresado:
+        if codigo_ingresado == CODIGO_ADMIN:
+            st.session_state.rol = "Administrador"
+            st.session_state.menu_seleccionado = "Panel de Control"
+            st.rerun()
+        elif codigo_ingresado == CODIGO_EMPLEADO:
+            st.session_state.rol = "Empleado"
+            st.session_state.menu_seleccionado = "Taller de Fabricación"
+            st.rerun()
+        else:
+            st.markdown("<p style='text-align:center; color:#ff4b4b; font-size:14px; margin-top:15px;'>Código incorrecto</p>", unsafe_allow_html=True)
 
 # ----------------------------
-# PANTALLAS
+# APLICACIÓN INICIADA (MENÚ MINIMALISTA INTEGRADO)
 # ----------------------------
-if not rol:
-    st.title("🏭 Control de Producción Local")
-    st.info("Coloca tu código en la barra lateral para desbloquear tus herramientas de trabajo.")
 else:
-    # 1. DASHBOARD GENERAL (Administrador)
-    if menu == "📈 Dashboard General":
-        st.title("Análisis de Inversión y Ventas")
+    # Definición de columnas del menú interactivo según rol
+    if st.session_state.rol == "Administrador":
+        columnas_menu = st.columns(5)
+        iconos = ["📊", "📦", "🔨", "💰", "▶️"]
+        nombres = ["Panel de Control", "Almacen", "Taller de Fabricación", "Ventas", "Capacitacion"]
+    else:
+        columnas_menu = st.columns(2)
+        iconos = ["🔨", "▶️"]
+        nombres = ["Taller de Fabricación", "Capacitacion"]
+
+    # Renderizado y lógica de clic de los botones estilo tu foto
+    for idx, (icono, nombre) in enumerate(zip(iconos, nombres)):
+        with columnas_menu[idx]:
+            # Resaltar en blanco el botón activo, los demás quedan en gris sutil
+            es_activo = st.session_state.menu_seleccionado == nombre
+            color_borde = "#ffffff" if es_activo else "#222222"
+            color_texto = "#ffffff" if es_activo else "#777777"
+            
+            # Botón con estilo personalizado simulando tu foto
+            st.markdown(f"""
+                <div style='text-align: center; margin-bottom: -15px;'>
+                    <span style='font-size: 32px;'>{icono}</span>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button(nombre, key=f"btn_{nombre}"):
+                st.session_state.menu_seleccionado = nombre
+                st.rerun()
+
+    st.markdown("<hr style='border: 1px solid #111111; margin-top: 15px; margin-bottom: 25px;'>", unsafe_allow_html=True)
+
+    # Botón discreto de cerrar sesión flotando abajo a la derecha
+    with st.sidebar:
+        st.write("") # Mantiene la lógica estructural limpia
+
+    # 1. PANTALLA: PANEL DE CONTROL
+    if st.session_state.menu_seleccionado == "Panel de Control" and st.session_state.rol == "Administrador":
+        st.subheader("Panel de Control")
         total_ventas = st.session_state.ventas["Total Venta ($)"].sum()
         total_inversion = st.session_state.materia_prima["Inversión Total ($)"].sum()
 
         col1, col2 = st.columns(2)
-        with col1: st.metric("Ventas Totales Registradas", f"${total_ventas:,.2f}")
-        with col2: st.metric("Costo Total Invertido en Materia Prima", f"${total_inversion:,.2f}")
+        with col1: st.metric("Ventas Totales", f"${total_ventas:,.2f}")
+        with col2: st.metric("Inversión Insumos", f"${total_inversion:,.2f}")
 
-        st.markdown("### 📊 Gráfico Analítico: Ventas Totales por Producto")
-        fig = px.bar(st.session_state.ventas, x="Producto", y="Total Venta ($)", text="Total Venta ($)", color="Producto", color_discrete_sequence=["#1e1e24", "#5c5c6d"])
-        fig.update_layout(plot_bgcolor="white", paper_bgcolor="white", showlegend=False)
-        fig.update_traces(texttemplate='$%{text:,.2f}', textposition='outside')
-        st.plotly_chart(fig, use_container_width=True)
-
-    # 2. ALMACÉN MATERIA PRIMA (Administrador)
-    elif menu == "📦 Almacén Materia Prima":
-        st.title("Inventario de Materia Prima e Inversión")
-        with st.form("form_mp"):
-            mat = st.text_input("Nombre del Material:")
-            cant = st.number_input("Cantidad que ingresa:", min_value=0.0, step=1.0)
-            costo = st.number_input("Costo Unitario ($):", min_value=0.0)
-
-            if st.form_submit_button("Registrar Entrada") and mat:
-                df = st.session_state.materia_prima
-                existente = df["Material"] == mat
-
-                if existente.any():
-                    idx = df.index[existente]
-                    df.at[idx, "Cantidad"] += cant
-                    df.at[idx, "Costo Unitario ($)"] = costo if costo > 0 else df.at[idx, "Costo Unitario ($)"]
-                else:
-                    nueva = pd.DataFrame([{"Material": mat, "Cantidad": cant, "Costo Unitario ($)": costo, "Inversión Total ($)": 0.0}])
-                    st.session_state.materia_prima = pd.concat([df, nueva], ignore_index=True)
-
-                guardar_datos()
-                st.success("¡Ingreso exitoso! Almacén actualizado.")
-                st.rerun()
-        st.dataframe(st.session_state.materia_prima, use_container_width=True, hide_index=True)
-
-    # 3. TALLER DE FABRICACIÓN (Ambos)
-    elif menu == "🔨 Taller de Fabricación":
-        st.title("Reportar Producción Terminada")
-        productos = st.session_state.productos_fabricados["Producto"].tolist()
-
-        with st.form("form_fab"):
-            prod = st.selectbox("¿Qué producto se fabricó?", productos)
-            cant_fab = st.number_input("Cantidad de piezas terminadas:", min_value=1, step=1)
-
-            if st.form_submit_button("Confirmar y Descontar Inventario"):
-                receta = FORMULAS.get(prod)
-                if not receta:
-                    st.error(f"❌ No existe la fórmula de fabricación para '{prod}'.")
-                else:
-                    materiales_faltantes = []
-                    ok = True
-
-                    for material, cantidad_por_pieza in receta.items():
-                        total_necesario = cantidad_por_pieza * cant_fab
-                        fila = st.session_state.materia_prima[st.session_state.materia_prima["Material"] == material]
-
-                        if fila.empty:
-                            ok = False
-                            materiales_faltantes.append(f"{material} (no existe en almacén)")
-                            continue
-                        
-                        if fila.iloc[0]["Cantidad"] < total_necesario:
-                            ok = False
