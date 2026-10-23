@@ -126,6 +126,8 @@ st.markdown('''
         color: #ffffff !important;
         font-family: 'Inter', sans-serif;
     }
+    
+    /* MODIFICACIÓN: Forzar filas de botones nativos de lado a lado */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
@@ -133,17 +135,39 @@ st.markdown('''
         justify-content: space-around !important;
         align-items: center !important;
         width: 100% !important;
+        gap: 5px !important;
     }
     div[data-testid="stHorizontalBlock"] > div {
         width: 100% !important;
         min-width: 0 !important;
     }
-    .stButton>button {
+    
+    /* ESTILIZADO DE LOS BOTONES DEL MENÚ SUPERIOR (ESTILO TU FOTO) */
+    div[data-testid="stHorizontalBlock"] button {
+        background-color: #111111 !important;
+        color: #ffffff !important;
+        border: 1px solid #222222 !important;
+        border-radius: 12px !important;
+        padding: 8px 2px !important;
+        height: 65px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    div[data-testid="stHorizontalBlock"] button p {
+        font-size: 10px !important;
+        margin-top: 2px !important;
+    }
+    
+    /* Botones normales de formularios */
+    div[data-testid="stForm"] button {
         background-color: #111111 !important;
         color: white !important;
         border: 1px solid #333333 !important;
         border-radius: 8px !important;
         width: 100%;
+        height: auto !important;
     }
     div[data-testid="stDataFrame"] div {
         background-color: #000000 !important;
@@ -194,55 +218,34 @@ if not st.session_state.rol:
 else:
     if st.session_state.rol == "Administrador":
         opciones = [
-            {"name": "Panel de Control", "icon": "📊", "label": "Panel"},
-            {"name": "Almacen", "icon": "📦", "label": "Almacen"},
-            {"name": "Taller de Fabricacion", "icon": "🔨", "label": "Taller"},
-            {"name": "Ventas", "icon": "💰", "label": "Ventas"},
-            {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
+            {"name": "Panel de Control", "label": "📊\nPanel"},
+            {"name": "Almacen", "label": "📦\nAlmacen"},
+            {"name": "Taller de Fabricacion", "label": "🔨\nTaller"},
+            {"name": "Ventas", "label": "💰\nVentas"},
+            {"name": "Capacitacion", "label": "▶️\nVideos"}
         ]
     else:
         opciones = [
-            {"name": "Taller de Fabricacion", "icon": "🔨", "label": "Taller"},
-            {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
+            {"name": "Taller de Fabricacion", "label": "🔨\nTaller"},
+            {"name": "Capacitacion", "label": "▶️\nVideos"}
         ]
 
     cols_nav = st.columns(len(opciones))
     
     for idx, opt in enumerate(opciones):
         with cols_nav[idx]:
+            # Si el botón está seleccionado, le ponemos un borde blanco brillante para que sepa dónde está parado
             es_act = st.session_state.menu_seleccionado == opt["name"]
-            opacidad = "opacity: 1.0; font-weight: bold; color: #ffffff;" if es_act else "opacity: 0.3; color: #888888;"
+            if es_act:
+                st.markdown('''<style>div[data-secondary-key="nav_'''+opt["name"]+'''"] button { border: 1px solid #ffffff !important; background-color: #222222 !important; }</style>''', unsafe_allow_html=True)
             
-            st.markdown(f"""
-                <div style='text-align: center; margin-bottom: -5px; {opacidad}'>
-                    <span style='font-size: 24px;'>{opt["icon"]}</span><br>
-                    <span style='font-size: 9px; font-family: sans-serif; white-space: nowrap;'>{opt["label"]}</span>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown('''
-                <style>
-                div[data-testid="stHorizontalBlock"] button {
-                    background-color: transparent !important;
-                    border: none !important;
-                    color: transparent !important;
-                    height: 40px !important;
-                    margin-top: -45px !important;
-                    position: relative !important;
-                    z-index: 10 !important;
-                }
-                div[data-testid="stHorizontalBlock"] button:hover {
-                    background-color: transparent !important;
-                    border: none !important;
-                }
-                </style>
-            ''', unsafe_allow_html=True)
-            
-            if st.button("", key=f"nav_{opt['name']}"):
+            # Botón real interactivo con el icono arriba y texto abajo
+            if st.button(opt["label"], key=f"nav_{opt['name']}"):
                 st.session_state.menu_seleccionado = opt["name"]
                 st.rerun()
 
-    st.markdown("<hr style='border: 1px solid #111111; margin-top: 15px; margin-bottom: 20px;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border: 1px solid #111111; margin-top: 10px; margin-bottom: 20px;'>", unsafe_allow_html=True)
 
     if st.session_state.menu_seleccionado == "Panel de Control" and st.session_state.rol == "Administrador":
         st.subheader("Panel de Control")
+        total_ventas = st.session_state.ventas["Total Venta ($)"].sum()
