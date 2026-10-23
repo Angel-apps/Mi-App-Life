@@ -3,33 +3,26 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# Configuración de página minimalista
-st.set_page_config(page_title="Gestión de Manufactura", page_icon="🏭", layout="wide")
+st.set_page_config(page_title="Gestion de Manufactura", page_icon="🏭", layout="wide")
 
-# Archivos locales
 DB_MATERIA = "db_materia_prima.csv"
 DB_PRODUCTOS = "db_productos.csv"
 DB_VENTAS = "db_ventas.csv"
 
-# Códigos de acceso por rol
 CODIGO_ADMIN = "1234"
 CODIGO_EMPLEADO = "5678"
 
-# Fórmulas de fabricación
 FORMULAS = {
     "Mesa de Centro Minimalista": {
         "Madera de Pino": 1,
-        "Barniz Ecológico": 0.5
+        "Barniz Ecologico": 0.5
     },
-    "Silla Nórdica": {
+    "Silla Nordica": {
         "Madera de Pino": 0.5,
-        "Barniz Ecológico": 0.2
+        "Barniz Ecologico": 0.2
     }
 }
 
-# ----------------------------
-# UTILIDADES
-# ----------------------------
 def cargar_datos(ruta, columnas_defecto):
     if os.path.exists(ruta):
         df = pd.read_csv(ruta)
@@ -52,26 +45,23 @@ def normalizar_numericos(df, columnas):
 def recalcular_inversion_material(df):
     df = df.copy()
     if "Cantidad" in df.columns and "Costo Unitario ($)" in df.columns:
-        df["Inversión Total ($)"] = df["Cantidad"] * df["Costo Unitario ($)"]
+        df["Inversion Total ($)"] = df["Cantidad"] * df["Costo Unitario ($)"]
     return df
 
 def guardar_datos():
     st.session_state.materia_prima = normalizar_numericos(
         st.session_state.materia_prima,
-        ["Cantidad", "Costo Unitario ($)", "Inversión Total ($)"]
+        ["Cantidad", "Costo Unitario ($)", "Inversion Total ($)"]
     )
     st.session_state.materia_prima = recalcular_inversion_material(st.session_state.materia_prima)
-
     st.session_state.productos_fabricados = normalizar_numericos(
         st.session_state.productos_fabricados,
         ["Stock Disponible"]
     )
-
     st.session_state.ventas = normalizar_numericos(
         st.session_state.ventas,
         ["Unidades Vendidas", "Total Venta ($)"]
     )
-
     st.session_state.materia_prima.to_csv(DB_MATERIA, index=False)
     st.session_state.productos_fabricados.to_csv(DB_PRODUCTOS, index=False)
     st.session_state.ventas.to_csv(DB_VENTAS, index=False)
@@ -79,7 +69,6 @@ def guardar_datos():
 def registrar_venta_efectiva(producto, unidades, precio_unitario):
     df = st.session_state.ventas.copy()
     total_venta = unidades * precio_unitario
-
     if producto in df["Producto"].values:
         idx = df.index[df["Producto"] == producto]
         df.at[idx, "Unidades Vendidas"] += unidades
@@ -91,31 +80,27 @@ def registrar_venta_efectiva(producto, unidades, precio_unitario):
             "Total Venta ($)": total_venta
         }])
         df = pd.concat([df, nueva_fila], ignore_index=True)
-
     st.session_state.ventas = df
 
-# ----------------------------
-# INICIALIZAR DATOS
-# ----------------------------
 if "materia_prima" not in st.session_state:
     st.session_state.materia_prima = cargar_datos(DB_MATERIA, [
-        {"Material": "Madera de Pino", "Cantidad": 150.0, "Costo Unitario ($)": 45.0, "Inversión Total ($)": 6750.0},
-        {"Material": "Barniz Ecológico", "Cantidad": 20.0, "Costo Unitario ($)": 120.0, "Inversión Total ($)": 2400.0}
+        {"Material": "Madera de Pino", "Cantidad": 150.0, "Costo Unitario ($)": 45.0, "Inversion Total ($)": 6750.0},
+        {"Material": "Barniz Ecologico", "Cantidad": 20.0, "Costo Unitario ($)": 120.0, "Inversion Total ($)": 2400.0}
     ])
-    st.session_state.materia_prima = normalizar_numericos(st.session_state.materia_prima, ["Cantidad", "Costo Unitario ($)", "Inversión Total ($)"])
+    st.session_state.materia_prima = normalizar_numericos(st.session_state.materia_prima, ["Cantidad", "Costo Unitario ($)", "Inversion Total ($)"])
     st.session_state.materia_prima = recalcular_inversion_material(st.session_state.materia_prima)
 
 if "productos_fabricados" not in st.session_state:
     st.session_state.productos_fabricados = cargar_datos(DB_PRODUCTOS, [
         {"Producto": "Mesa de Centro Minimalista", "Stock Disponible": 12},
-        {"Producto": "Silla Nórdica", "Stock Disponible": 34}
+        {"Producto": "Silla Nordica", "Stock Disponible": 34}
     ])
     st.session_state.productos_fabricados = normalizar_numericos(st.session_state.productos_fabricados, ["Stock Disponible"])
 
 if "ventas" not in st.session_state:
     st.session_state.ventas = cargar_datos(DB_VENTAS, [
         {"Producto": "Mesa de Centro Minimalista", "Unidades Vendidas": 25, "Total Venta ($)": 48750.0},
-        {"Producto": "Silla Nórdica", "Unidades Vendidas": 80, "Total Venta ($)": 63200.0}
+        {"Producto": "Silla Nordica", "Unidades Vendidas": 80, "Total Venta ($)": 63200.0}
     ])
     st.session_state.ventas = normalizar_numericos(st.session_state.ventas, ["Unidades Vendidas", "Total Venta ($)"])
 
@@ -125,10 +110,7 @@ if "rol" not in st.session_state:
 if "menu_seleccionado" not in st.session_state:
     st.session_state.menu_seleccionado = "Panel de Control"
 
-# ----------------------------
-# ESTILOS CSS BASE (TOTAL BLACK)
-# ----------------------------
-st.markdown("""
+st.markdown('''
     <style>
     .stApp, .main, [data-testid="stSidebar"], [data-testid="stHeader"] {
         background-color: #000000 !important;
@@ -144,7 +126,6 @@ st.markdown("""
         color: #ffffff !important;
         font-family: 'Inter', sans-serif;
     }
-    
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
@@ -157,7 +138,6 @@ st.markdown("""
         width: 100% !important;
         min-width: 0 !important;
     }
-    
     .stButton>button {
         background-color: #111111 !important;
         color: white !important;
@@ -170,18 +150,14 @@ st.markdown("""
         color: #ffffff !important;
     }
     </style>
-""", unsafe_allow_html=True)
+''', unsafe_allow_html=True)
 
-# ----------------------------
-# PANTALLA DE LOGUEO
-# ----------------------------
 if not st.session_state.rol:
-    st.markdown("""
+    st.markdown('''
         <style>
         .login-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 18vh; margin-bottom: 25px; }
         .avatar { width: 100px; height: 100px; border: 4px solid #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .avatar::before { content: "👤"; font-size: 50px; color: #ffffff; }
-        
         div[data-testid="stTextInput"] {
             max-width: 280px !important;
             margin: 0 auto !important;
@@ -198,10 +174,10 @@ if not st.session_state.rol:
         }
         div[data-testid="stTextInput"] label { display: none !important; }
         </style>
-    """, unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
     st.markdown('<div class="login-box"><div class="avatar"></div></div>', unsafe_allow_html=True)
-    codigo_ingresado = st.text_input("Ingreso", type="password", placeholder="🔒 Digite el código...")
+    codigo_ingresado = st.text_input("Ingreso", type="password", placeholder="🔒 Digite el codigo...")
 
     if codigo_ingresado:
         if codigo_ingresado == CODIGO_ADMIN:
@@ -210,26 +186,23 @@ if not st.session_state.rol:
             st.rerun()
         elif codigo_ingresado == CODIGO_EMPLEADO:
             st.session_state.rol = "Empleado"
-            st.session_state.menu_seleccionado = "Taller de Fabricación"
+            st.session_state.menu_seleccionado = "Taller de Fabricacion"
             st.rerun()
         else:
-            st.markdown("<p style='text-align:center; color:#ff4b4b; font-size:14px; margin-top:15px;'>Código incorrecto</p>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align:center; color:#ff4b4b; font-size:14px; margin-top:15px;'>Codigo incorrecto</p>", unsafe_allow_html=True)
 
-# ----------------------------
-# APLICACIÓN INICIADA
-# ----------------------------
 else:
     if st.session_state.rol == "Administrador":
         opciones = [
             {"name": "Panel de Control", "icon": "📊", "label": "Panel"},
             {"name": "Almacen", "icon": "📦", "label": "Almacen"},
-            {"name": "Taller de Fabricación", "icon": "🔨", "label": "Taller"},
+            {"name": "Taller de Fabricacion", "icon": "🔨", "label": "Taller"},
             {"name": "Ventas", "icon": "💰", "label": "Ventas"},
             {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
         ]
     else:
         opciones = [
-            {"name": "Taller de Fabricación", "icon": "🔨", "label": "Taller"},
+            {"name": "Taller de Fabricacion", "icon": "🔨", "label": "Taller"},
             {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
         ]
 
@@ -247,7 +220,7 @@ else:
                 </div>
             """, unsafe_allow_html=True)
             
-            st.markdown("""
+            st.markdown('''
                 <style>
                 div[data-testid="stHorizontalBlock"] button {
                     background-color: transparent !important;
@@ -261,3 +234,15 @@ else:
                 div[data-testid="stHorizontalBlock"] button:hover {
                     background-color: transparent !important;
                     border: none !important;
+                }
+                </style>
+            ''', unsafe_allow_html=True)
+            
+            if st.button("", key=f"nav_{opt['name']}"):
+                st.session_state.menu_seleccionado = opt["name"]
+                st.rerun()
+
+    st.markdown("<hr style='border: 1px solid #111111; margin-top: 15px; margin-bottom: 20px;'>", unsafe_allow_html=True)
+
+    if st.session_state.menu_seleccionado == "Panel de Control" and st.session_state.rol == "Administrador":
+        st.subheader("Panel de Control")
