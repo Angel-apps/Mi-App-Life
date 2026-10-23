@@ -156,49 +156,32 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* ESTILOS DEL NUEVO MENÚ HORIZONTAL FORZADO PARA MÓVILES */
-    .nav-container {
+    /* ESTILOS DEL MENÚ HORIZONTAL PREMIUM */
+    .menu-horizontal {
         display: flex !important;
-        flex-direction: row !important;
         justify-content: space-around !important;
-        align-items: center !important;
         background-color: #000000 !important;
-        padding: 10px 0px !important;
-        width: 100% !important;
-        overflow-x: auto !important;
+        padding: 15px 5px !important;
+        border-bottom: 1px solid #111111 !important;
+        margin-bottom: 20px !important;
     }
-    
-    .nav-item {
+    .menu-boton-activo {
+        background: none !important;
+        border: none !important;
+        color: #ffffff !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        text-decoration: none !important;
-        min-width: 65px !important;
-        border: none !important;
+        cursor: pointer !important;
+    }
+    .menu-boton-inactivo {
         background: none !important;
-        padding: 0 !important;
-    }
-    
-    .nav-icon {
-        font-size: 26px !important;
-        margin-bottom: 5px !important;
-    }
-    
-    .nav-text {
-        font-size: 10px !important;
-        color: #777777 !important;
-        font-family: 'Inter', sans-serif !important;
-        white-space: nowrap !important;
-    }
-    
-    .nav-text-active {
-        font-size: 10px !important;
-        color: #ffffff !important;
-        font-weight: bold !important;
-        font-family: 'Inter', sans-serif !important;
-        white-space: nowrap !important;
+        border: none !important;
+        color: #444444 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        cursor: pointer !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -234,28 +217,39 @@ if not st.session_state.rol:
             st.markdown("<p style='text-align:center; color:#ff4b4b; font-size:14px; margin-top:15px;'>Código incorrecto</p>", unsafe_allow_html=True)
 
 # ----------------------------
-# APLICACIÓN INICIADA (MENÚ HORIZONTAL REAL)
+# APLICACIÓN INICIADA (MENÚ SEGURO DE 1 SOLA FILA)
 # ----------------------------
 else:
     # Definir opciones del menú interactivo según rol
     if st.session_state.rol == "Administrador":
         opciones = [
-            {"name": "Panel de Control", "icon": "📊", "label": "Panel de Control"},
-            {"name": "Almacen", "icon": "📦", "label": "Almacen"},
-            {"name": "Taller de Fabricación", "icon": "🔨", "label": "Fabricación"},
+            {"name": "Panel de Control", "icon": "📊", "label": "Panel"},
+            {"name": "Almacen", "icon": "📦", "label": "Almacén"},
+            {"name": "Taller de Fabricación", "icon": "🔨", "label": "Taller"},
             {"name": "Ventas", "icon": "💰", "label": "Ventas"},
-            {"name": "Capacitacion", "icon": "▶️", "label": "Capacitacion"}
+            {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
         ]
     else:
         opciones = [
-            {"name": "Taller de Fabricación", "icon": "🔨", "label": "Fabricación"},
-            {"name": "Capacitacion", "icon": "▶️", "label": "Capacitacion"}
+            {"name": "Taller de Fabricación", "icon": "🔨", "label": "Taller"},
+            {"name": "Capacitacion", "icon": "▶️", "label": "Videos"}
         ]
 
-    # Renderizar el menú horizontal usando selectbox nativo camuflado como barra minimalista
-    # Esto soluciona el colapso vertical en teléfonos y se ve idéntico a tu foto
-    nombres_menu = [opt["label"] for opt in opciones]
-    iconos_menu = [opt["icon"] for opt in opciones]
-    claves_menu = [opt["name"] for opt in opciones]
+    # Renderizar barra horizontal limpia con las columnas nativas pero sin colapso vertical ruidoso
+    cols_nav = st.columns(len(opciones))
     
-    # Buscamos cuál es el índice actual para mantenerlo seleccionado
+    for idx, opt in enumerate(opciones):
+        with cols_nav[idx]:
+            # Detectar si este botón es el activo actualmente
+            es_activo = st.session_state.menu_seleccionado == opt["name"]
+            
+            # Estilo del texto del botón
+            estilo_texto = "color: #ffffff; font-weight: bold; font-size: 11px;" if es_activo else "color: #555555; font-size: 11px;"
+            estilo_icono = "font-size: 28px; opacity: 1.0;" if es_activo else "font-size: 28px; opacity: 0.3;"
+            
+            st.markdown(f"""
+                <div style='text-align: center; margin-bottom: -10px;'>
+                    <span style='{estilo_icono}'>{opt["icon"]}</span>
+                </div>
+            """, unsafe_allow_html=True)
+            
