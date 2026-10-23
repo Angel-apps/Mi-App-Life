@@ -128,7 +128,6 @@ if "menu_seleccionado" not in st.session_state:
 # ----------------------------
 # ESTILOS CSS BASE (TOTAL BLACK)
 # ----------------------------
-# Forzamos fondo negro absoluto y eliminamos componentes visuales por defecto
 st.markdown("""
     <style>
     .stApp, .main, [data-testid="stSidebar"], [data-testid="stHeader"] {
@@ -138,18 +137,13 @@ st.markdown("""
         visibility: hidden !important;
         height: 0px !important;
     }
-    /* Ocultar barra lateral por completo */
     [data-testid="stSidebar"] {
         display: none !important;
     }
-    
-    /* Diseño de los contenedores de datos */
     h1, h2, h3, p, span, label {
         color: #ffffff !important;
         font-family: 'Inter', sans-serif;
     }
-    
-    /* Estilizar botones nativos de los formularios para que sigan siendo minimalistas */
     .stButton>button {
         background-color: #111111 !important;
         color: white !important;
@@ -157,14 +151,54 @@ st.markdown("""
         border-radius: 8px !important;
         width: 100%;
     }
-    .stButton>button:hover {
-        border-color: #ffffff !important;
-    }
-    
-    /* Tablas de datos oscuras */
     div[data-testid="stDataFrame"] div {
         background-color: #000000 !important;
         color: #ffffff !important;
+    }
+    
+    /* ESTILOS DEL NUEVO MENÚ HORIZONTAL FORZADO PARA MÓVILES */
+    .nav-container {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        background-color: #000000 !important;
+        padding: 10px 0px !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+    }
+    
+    .nav-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        text-decoration: none !important;
+        min-width: 65px !important;
+        border: none !important;
+        background: none !important;
+        padding: 0 !important;
+    }
+    
+    .nav-icon {
+        font-size: 26px !important;
+        margin-bottom: 5px !important;
+    }
+    
+    .nav-text {
+        font-size: 10px !important;
+        color: #777777 !important;
+        font-family: 'Inter', sans-serif !important;
+        white-space: nowrap !important;
+    }
+    
+    .nav-text-active {
+        font-size: 10px !important;
+        color: #ffffff !important;
+        font-weight: bold !important;
+        font-family: 'Inter', sans-serif !important;
+        white-space: nowrap !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -200,51 +234,28 @@ if not st.session_state.rol:
             st.markdown("<p style='text-align:center; color:#ff4b4b; font-size:14px; margin-top:15px;'>Código incorrecto</p>", unsafe_allow_html=True)
 
 # ----------------------------
-# APLICACIÓN INICIADA (MENÚ MINIMALISTA INTEGRADO)
+# APLICACIÓN INICIADA (MENÚ HORIZONTAL REAL)
 # ----------------------------
 else:
-    # Definición de columnas del menú interactivo según rol
+    # Definir opciones del menú interactivo según rol
     if st.session_state.rol == "Administrador":
-        columnas_menu = st.columns(5)
-        iconos = ["📊", "📦", "🔨", "💰", "▶️"]
-        nombres = ["Panel de Control", "Almacen", "Taller de Fabricación", "Ventas", "Capacitacion"]
+        opciones = [
+            {"name": "Panel de Control", "icon": "📊", "label": "Panel de Control"},
+            {"name": "Almacen", "icon": "📦", "label": "Almacen"},
+            {"name": "Taller de Fabricación", "icon": "🔨", "label": "Fabricación"},
+            {"name": "Ventas", "icon": "💰", "label": "Ventas"},
+            {"name": "Capacitacion", "icon": "▶️", "label": "Capacitacion"}
+        ]
     else:
-        columnas_menu = st.columns(2)
-        iconos = ["🔨", "▶️"]
-        nombres = ["Taller de Fabricación", "Capacitacion"]
+        opciones = [
+            {"name": "Taller de Fabricación", "icon": "🔨", "label": "Fabricación"},
+            {"name": "Capacitacion", "icon": "▶️", "label": "Capacitacion"}
+        ]
 
-    # Renderizado y lógica de clic de los botones estilo tu foto
-    for idx, (icono, nombre) in enumerate(zip(iconos, nombres)):
-        with columnas_menu[idx]:
-            # Resaltar en blanco el botón activo, los demás quedan en gris sutil
-            es_activo = st.session_state.menu_seleccionado == nombre
-            color_borde = "#ffffff" if es_activo else "#222222"
-            color_texto = "#ffffff" if es_activo else "#777777"
-            
-            # Botón con estilo personalizado simulando tu foto
-            st.markdown(f"""
-                <div style='text-align: center; margin-bottom: -15px;'>
-                    <span style='font-size: 32px;'>{icono}</span>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button(nombre, key=f"btn_{nombre}"):
-                st.session_state.menu_seleccionado = nombre
-                st.rerun()
-
-    st.markdown("<hr style='border: 1px solid #111111; margin-top: 15px; margin-bottom: 25px;'>", unsafe_allow_html=True)
-
-    # Botón discreto de cerrar sesión flotando abajo a la derecha
-    with st.sidebar:
-        st.write("") # Mantiene la lógica estructural limpia
-
-    # 1. PANTALLA: PANEL DE CONTROL
-    if st.session_state.menu_seleccionado == "Panel de Control" and st.session_state.rol == "Administrador":
-        st.subheader("Panel de Control")
-        total_ventas = st.session_state.ventas["Total Venta ($)"].sum()
-        total_inversion = st.session_state.materia_prima["Inversión Total ($)"].sum()
-
-        col1, col2 = st.columns(2)
-        with col1: st.metric("Ventas Totales", f"${total_ventas:,.2f}")
-        with col2: st.metric("Inversión Insumos", f"${total_inversion:,.2f}")
-
+    # Renderizar el menú horizontal usando selectbox nativo camuflado como barra minimalista
+    # Esto soluciona el colapso vertical en teléfonos y se ve idéntico a tu foto
+    nombres_menu = [opt["label"] for opt in opciones]
+    iconos_menu = [opt["icon"] for opt in opciones]
+    claves_menu = [opt["name"] for opt in opciones]
+    
+    # Buscamos cuál es el índice actual para mantenerlo seleccionado
